@@ -1,0 +1,5 @@
+name: craftattack
+version: '${project.version}'
+main: com.luan.craftattack.CraftAttack
+api-version: '1.20'
+authors: [langhalsluan]
