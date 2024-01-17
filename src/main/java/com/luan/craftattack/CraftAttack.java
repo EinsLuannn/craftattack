@@ -2,6 +2,7 @@ package com.luan.craftattack;
 
 import com.luan.craftattack.discord.DiscordIntegration;
 import com.luan.craftattack.expansions.Registration;
+import com.luan.craftattack.expansions.TablistDeaths;
 import com.luan.craftattack.expansions.home.HomeManager;
 import com.luan.craftattack.expansions.teams.TeamManager;
 import org.bukkit.Bukkit;
@@ -19,6 +20,7 @@ public final class CraftAttack extends JavaPlugin {
     private HomeManager homeManager;
     private Registration registration;
     private DiscordIntegration discordIntegration;
+    private boolean maintenance = false;
 
     @Override
     public void onEnable() {
@@ -29,20 +31,24 @@ public final class CraftAttack extends JavaPlugin {
             this.saveDefaultConfig();
         }
         this.reloadConfig();
-        getLogger().info("Loading Commands...");
 
-
-        getLogger().info("Loading Listeners...");
         PluginManager pluginManager = Bukkit.getPluginManager();
 
-        teamManager = new TeamManager();
-        homeManager = new HomeManager();
         registration = new Registration(new File(getDataFolder(), "registration.json"));
         try {
             registration.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
+
+        teamManager = new TeamManager();
+        homeManager.initialize();
+        new TablistDeaths();
+
+        if (new File(getDataFolder(), "maintenance").exists()) {
+            maintenance = true;
+        }
+
         if (this.getConfig().getBoolean("discord_enabled")) {
             try {
                 discordIntegration = new DiscordIntegration(this.getConfig().getString("discord_token"), this.getConfig().getString("discord_channelid"));
@@ -57,8 +63,22 @@ public final class CraftAttack extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        if (!maintenance) {
+            new File(getDataFolder(), "maintenance").delete();
+        } else {
+            try {
+                new File(getDataFolder(), "maintenance").createNewFile();
+            } catch (IOException exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+        try {
+            registration.save();
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
+        }
     }
+
 
     public static CraftAttack getInstance() {
         return instance;
@@ -74,6 +94,14 @@ public final class CraftAttack extends JavaPlugin {
 
     public Registration getRegistration() {
         return registration;
+    }
+
+    public boolean isMaintenance() {
+        return maintenance;
+    }
+
+    public void setMaintenance(boolean maintenance) {
+        this.maintenance = maintenance;
     }
 
     public DiscordIntegration getDiscordIntegration() {
