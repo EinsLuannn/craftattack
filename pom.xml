@@ -67,5 +67,15 @@
           <version>1.20.4-R0.1-SNAPSHOT</version>
           <scope>provided</scope>
       </dependency>
+      <dependency>
+          <groupId>org.json</groupId>
+          <artifactId>json</artifactId>
+          <version>20220320</version>
+      </dependency>
+      <dependency>
+          <groupId>net.dv8tion</groupId>
+          <artifactId>JDA</artifactId>
+          <version>5.0.0-alpha.12</version>
+      </dependency>
   </dependencies>
 </project>
