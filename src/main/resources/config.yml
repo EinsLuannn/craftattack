@@ -1,0 +1,11 @@
+#
+# CraftAttack System configuration file
+#
+
+# Based on the world spawn in which radius the players will get an elytra
+elytra_radius: 10
+
+# Send death messages to a Discord channel
+discord_enabled: false
+discord_token: ""
+discord_channelid: ""

@@ -1,10 +1,16 @@
 package com.luan.craftattack;
 
+import com.luan.craftattack.commands.CommandMaintenance;
+import com.luan.craftattack.commands.CommandTPS;
 import com.luan.craftattack.discord.DiscordIntegration;
+import com.luan.craftattack.expansions.ElytraSpawn;
+import com.luan.craftattack.expansions.NightSkip;
 import com.luan.craftattack.expansions.Registration;
 import com.luan.craftattack.expansions.TablistDeaths;
 import com.luan.craftattack.expansions.home.HomeManager;
+import com.luan.craftattack.expansions.spawn.SpawnManager;
 import com.luan.craftattack.expansions.teams.TeamManager;
+import com.luan.craftattack.listener.PlayerCommandPreProcessListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,6 +26,7 @@ public final class CraftAttack extends JavaPlugin {
     private HomeManager homeManager;
     private Registration registration;
     private DiscordIntegration discordIntegration;
+    private SpawnManager spawnManager;
     private boolean maintenance = false;
 
     @Override
@@ -33,6 +40,12 @@ public final class CraftAttack extends JavaPlugin {
         this.reloadConfig();
 
         PluginManager pluginManager = Bukkit.getPluginManager();
+        pluginManager.registerEvents(new PlayerCommandPreProcessListener(), this);
+        pluginManager.registerEvents(new CommandMaintenance(), this);
+
+        this.getCommand("tps").setExecutor(new CommandTPS());
+        this.getCommand("maintenance").setExecutor(new CommandMaintenance());
+
 
         registration = new Registration(new File(getDataFolder(), "registration.json"));
         try {
@@ -42,8 +55,16 @@ public final class CraftAttack extends JavaPlugin {
         }
 
         teamManager = new TeamManager();
+
+        homeManager = new HomeManager();
         homeManager.initialize();
+
+        spawnManager = new SpawnManager();
+        spawnManager.initialize();
+
         new TablistDeaths();
+        new ElytraSpawn(this.getConfig().getInt("elytra_radius"));
+        new NightSkip();
 
         if (new File(getDataFolder(), "maintenance").exists()) {
             maintenance = true;
@@ -58,7 +79,6 @@ public final class CraftAttack extends JavaPlugin {
                 throw new RuntimeException(exception);
             }
         }
-
     }
 
     @Override
@@ -98,6 +118,10 @@ public final class CraftAttack extends JavaPlugin {
 
     public boolean isMaintenance() {
         return maintenance;
+    }
+
+    public SpawnManager getSpawnManager() {
+        return spawnManager;
     }
 
     public void setMaintenance(boolean maintenance) {
